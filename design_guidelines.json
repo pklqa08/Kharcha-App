@@ -1,0 +1,191 @@
+{
+  "app_name": "Kharcha",
+  "personality": "5 Brutalist Mobile structure infused with 6 Glass / Luxe premium surfaces",
+  "personality_one_liner": "A high-contrast, data-dense fintech experience that treats financial metrics with command-center authority and premium glass overlays.",
+  "color": {
+    "light": {
+      "surface": "#FAFAFA",
+      "onSurface": "#111111",
+      "surfaceSecondary": "#F0F0F0",
+      "onSurfaceSecondary": "#222222",
+      "surfaceTertiary": "#E5E5E5",
+      "onSurfaceTertiary": "#333333",
+      "surfaceInverse": "#111111",
+      "onSurfaceInverse": "#FFFFFF",
+      "brand": "#FF5E00",
+      "brandPrimary": "#FF5E00",
+      "onBrandPrimary": "#FFFFFF",
+      "brandSecondary": "#CC4B00",
+      "onBrandSecondary": "#FFFFFF",
+      "brandTertiary": "#FFF0E5",
+      "onBrandTertiary": "#FF5E00",
+      "success": "#00B359",
+      "onSuccess": "#FFFFFF",
+      "warning": "#FFC200",
+      "onWarning": "#111111",
+      "error": "#E60000",
+      "onError": "#FFFFFF",
+      "info": "#8C7366",
+      "onInfo": "#FFFFFF",
+      "border": "#E0E0E0",
+      "borderStrong": "#111111",
+      "divider": "#EEEEEE"
+    },
+    "dark": {
+      "surface": "#0A0A0A",
+      "onSurface": "#FDFDFD",
+      "surfaceSecondary": "#1A1A1A",
+      "onSurfaceSecondary": "#EAEAEA",
+      "surfaceTertiary": "#2A2A2A",
+      "onSurfaceTertiary": "#D4D4D4",
+      "surfaceInverse": "#FAFAFA",
+      "onSurfaceInverse": "#111111",
+      "brand": "#FF5E00",
+      "brandPrimary": "#FF5E00",
+      "onBrandPrimary": "#111111",
+      "brandSecondary": "#FF8533",
+      "onBrandSecondary": "#111111",
+      "brandTertiary": "#331600",
+      "onBrandTertiary": "#FF5E00",
+      "success": "#00E673",
+      "onSuccess": "#111111",
+      "warning": "#FFD633",
+      "onWarning": "#111111",
+      "error": "#FF3333",
+      "onError": "#111111",
+      "info": "#A69286",
+      "onInfo": "#111111",
+      "border": "#333333",
+      "borderStrong": "#FDFDFD",
+      "divider": "#222222"
+    }
+  },
+  "typography": {
+    "displayFontFamily": "SpaceGrotesk-Medium",
+    "textFontFamily": "JetBrainsMono-Regular",
+    "scale": {
+      "sm": 12,
+      "base": 14,
+      "lg": 16,
+      "xl": 20,
+      "2xl": 24
+    }
+  },
+  "spacing": {
+    "rule": "Generous vertical breathing room. Exposed structure and visible spacing systems. Whitespace acts as content.",
+    "xs": 4,
+    "sm": 8,
+    "md": 12,
+    "lg": 16,
+    "xl": 24,
+    "2xl": 32,
+    "3xl": 48
+  },
+  "radius_tokens": {
+    "sm": 6,
+    "md": 12,
+    "lg": 20,
+    "pill": 999
+  },
+  "shadow_tier": 0,
+  "navigation": "bottom_tabs",
+  "icon_set": "Phosphor",
+  "glassmorphism": {
+    "enabled": true,
+    "do's": [
+      "Use glass for sticky headers over scrolling content",
+      "Use glass for bottom tab bar",
+      "Use glass for the primary featured dashboard card overlaid on the hero image",
+      "Ensure text on glass is fully readable by adding a translucent tinted base underneath (>=75% opacity in dark mode)"
+    ],
+    "dont's": [
+      "Never apply glass to body content, form fields, or standard list rows",
+      "Never rely on the underlying image for contrast without a scrim layer"
+    ]
+  },
+  "platform_libraries": {
+    "glass": {
+      "ios": "expo-glass-effect",
+      "android": "expo-blur",
+      "low_end_android_fallback": "solid surfaceSecondary"
+    },
+    "image": "expo-image",
+    "blur": "expo-blur",
+    "bottom_sheet": "@gorhom/bottom-sheet",
+    "animation": "react-native-reanimated",
+    "gesture": "react-native-gesture-handler"
+  },
+  "screens": [
+    {
+      "name": "Auth",
+      "purpose": "Secure entry via PIN or Biometric App Lock.",
+      "states": {
+        "loading": "Centered brand-colored spinner",
+        "empty": "N/A",
+        "error": "Shake animation on PIN dots, stark red error message"
+      },
+      "layout": "Minimalist screen with the brand logo/name centered, an oversized mono PIN pad, and a biometric quick-action button below."
+    },
+    {
+      "name": "Dashboard",
+      "purpose": "A commanding overview of finances: today's expense, balances, and quick actions.",
+      "states": {
+        "loading": "Skeleton structure matching the high-contrast blocks",
+        "empty": "No transactions yet. A stark mono illustration with a bold CTA to 'Log Kharcha'",
+        "error": "Readable error message with a 'Retry' mono button"
+      },
+      "layout": "Hero image at the top with a glassmorphic primary balance card overlay. Below it, a segmented control or chunked grid of quick actions and a short list of recent transactions grouped by date."
+    },
+    {
+      "name": "Transactions",
+      "purpose": "A chronological, filterable ledger of all income and expenses.",
+      "states": {
+        "loading": "Spinner centered in the list container",
+        "empty": "Empty state illustration of a clear ledger with 'No recent activity'",
+        "error": "Error message with a 'Reload ledger' button"
+      },
+      "layout": "Sticky glass header with a search bar and filter chips. A flat, edge-to-edge list grouped by date with swipe-to-delete/edit actions on each row. Add transaction FAB at the bottom right."
+    },
+    {
+      "name": "Analytics",
+      "purpose": "Visual breakdown of spending and saving patterns.",
+      "states": {
+        "loading": "Skeleton charts",
+        "empty": "Chart outline with 0 data, prompt to add expenses",
+        "error": "Failed to load insights, tap to retry"
+      },
+      "layout": "Segmented controls at the top (Income vs Expense). Large, minimalist Bar/Pie charts. A list of 'Top Merchants' beneath the charts in chunked cards."
+    },
+    {
+      "name": "Settings",
+      "purpose": "User preferences, currency, and theme control.",
+      "states": {
+        "loading": "Spinner",
+        "empty": "N/A",
+        "error": "N/A"
+      },
+      "layout": "Simple list layout with 1px structural dividers. Toggle switches exposed directly on the row. Sections for Currency, Theme, Backups, and Notifications."
+    }
+  ],
+  "images": {
+    "dashboard_hero": {
+      "url": "https://images.unsplash.com/photo-1645708313906-c4e2cd0b4daa?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NTZ8MHwxfHNlYXJjaHwxfHxtaW5pbWFsaXN0JTIwd2hpdGUlMjBwYXBlciUyMGdlb21ldHJpYyUyMG9yYW5nZXxlbnwwfHx8fDE3ODM0NDE0NzR8MA&ixlib=rb-4.1.0&q=85",
+      "dark": "https://images.unsplash.com/photo-1632952517567-faa56d92e1c8?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NzR8MHwxfHNlYXJjaHwxfHxkYXJrJTIwY2hhcmNvYWwlMjBpbmR1c3RyaWFsJTIwZ2VvbWV0cmljJTIwb3JhbmdlfGVufDB8fHx8MTc4MzQ0MTQ2OXww&ixlib=rb-4.1.0&q=85",
+      "alt": "Abstract geometric background for the dashboard hero section"
+    },
+    "empty_transactions": {
+      "url": "https://images.unsplash.com/photo-1693045181224-9fc2f954f054?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NTYxODF8MHwxfHNlYXJjaHwxfHxtaW5pbWFsaXN0JTIwZXhwZW5zZSUyMHRyYWNrZXIlMjB2ZWN0b3J8ZW58MHx8fHwxNzgzNDQxNDU3fDA&ixlib=rb-4.1.0&q=85",
+      "alt": "Minimalist paper and pencil on a surface, representing an empty expense tracker"
+    }
+  },
+  "instructions_to_main_agent": [
+    "Strictly follow the color palette. Blue and purple are completely banned. Use the defined 'Industrial Orange' for brand elements and Mint Green / Bright Red for financial status indicators.",
+    "Adopt a 'CRED-like' premium aesthetic: high contrast, stark backgrounds (charcoal black in dark mode), and chunked information architecture with soft glassmorphic overlays.",
+    "Typography must be strictly adhered to: SpaceGrotesk for display/headers and JetBrains Mono for ALL numeric data (balances, transaction amounts, dates). This drives the command-center feel.",
+    "Limit font weights to 400 and 500 across the entire application. Use font size, not weight, to establish visual hierarchy.",
+    "Always apply a top-to-bottom gradient scrim (transparent to >=75% surfaceInverse) between background imagery and text to guarantee WCAG compliance.",
+    "Implement swipeable list items for transactions (Add/Edit/Delete actions) using react-native-gesture-handler.",
+    "The primary action button (e.g., 'Add Kharcha') must float or be pinned to the bottom of the screen with a glass background behind it when content scrolls.",
+    "Implement Haptic feedback correctly for primary buttons, tab switching, toggles, and form submissions."
+  ]
+}
