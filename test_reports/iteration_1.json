@@ -1,0 +1,61 @@
+{
+  "summary": "Frontend-only testing on Expo web preview. Web preview renders. Onboarding step 1 (Welcome), step 2 (Currency picker with all currencies incl. INR default), and step 3 (PIN setup screen) all render correctly with correct testIDs. However TWO CRITICAL bugs block completing onboarding on web: (1) 'Skip PIN' path calls setCurrency+markOnboarded+refresh; refresh() reloads from SQLite which is unavailable on web and RESETS onboarded state back to false, causing AuthGate to redirect user back to /onboarding instead of /(tabs) → dashboard never renders. (2) Full-PIN path always errors 'PINs do not match' even when identical digits are entered, due to a stale-closure bug in PinPad+onboarding: PinPad calls setTimeout(onSubmit, 80) after the last onChange, but the onSubmit captured is the previous render's handleFinishWithPin whose pin2 is one digit short. Because the two onboarding paths are blocked, we could NOT reach or verify Dashboard, Add Transaction, Transactions tab, Analytics tab, Settings tab (theme toggle, modals), Categories, Reports, or bottom tab navigation via UI. On code inspection, all required testIDs (dashboard-screen, balance-hero, stat-today-*, quick-*-btn, fab-add, empty-add-btn, tab-*, row-currency/theme/pin/biometric/categories/reports/backup/notifications/clear/about/privacy, theme-option-light|dark|system, modal-close, modal-backdrop, txn-form-screen fields, categories-screen, reports-screen) are present in code. Deprecated packages detected: expo-av is still in package.json (deprecated - migrate to expo-audio/expo-video). Multiple RN Web deprecation warnings surfaced in console ('shadow*' style props, props.pointerEvents).",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [
+      {
+        "component": "onboarding.tsx (Skip PIN path)",
+        "issue": "finish({skipPin:true}) calls await refresh() AFTER markOnboarded(). On web where expo-sqlite is unavailable, settingsRepo.get returns null, so loadAll() sets onboarded back to false. Result: router.replace('/(tabs)') is called, AuthGate immediately redirects back to /onboarding. Dashboard is unreachable on web. On native this may also cause a race if refresh reads stale DB. Remove the refresh() call - markOnboarded already updates local state.",
+        "testID": "skip-pin-btn",
+        "priority": "CRITICAL"
+      },
+      {
+        "component": "PinPad.tsx + onboarding.tsx (Full PIN path)",
+        "issue": "Confirming a PIN that matches the setup PIN incorrectly shows 'PINs do not match'. Root cause: PinPad.press() calls onChange(next) then setTimeout(onSubmit, 80). The onSubmit reference is a closure captured in the previous render (before the last digit was set), so handleFinishWithPin sees pin2 with only 3 digits while pin1 has 4. Fix options: (a) pass next value into onSubmit and change handleFinishWithPin signature to accept the confirm PIN; (b) use a ref/useEffect in onboarding to trigger match when pin2.length === 4; (c) in PinPad, call onSubmit(next) instead of onSubmit(). Reference: /app/frontend/src/widgets/PinPad.tsx:26 and /app/frontend/app/onboarding.tsx:37-50.",
+        "testID": "confirm-pin-key-*",
+        "priority": "CRITICAL"
+      },
+      {
+        "component": "expo-sqlite web bundling",
+        "issue": "Metro logs an initial 'Unable to resolve ./wa-sqlite/wa-sqlite.wasm' bundle failure for the web target (node_modules/expo-sqlite/web/worker.ts:22). Recovery eventually loads the app but this is fragile; the app now silently drops to a no-op DB on web. Consider gating the import: only import expo-sqlite when Platform.OS !== 'web', or provide a web-only DB shim. Reference: /app/frontend/src/data/db.ts:1.",
+        "testID": "",
+        "priority": "MEDIUM"
+      }
+    ],
+    "integration_issues": [
+      {
+        "flow": "Onboarding → Dashboard (both skip-PIN and full-PIN)",
+        "issue": "Neither path successfully lands on /(tabs). Skip-PIN ping-pongs back to /onboarding due to refresh() bug. Full-PIN never gets past confirm step due to stale-closure mismatch bug.",
+        "affected_testIDs": ["skip-pin-btn", "confirm-pin-key-1", "confirm-pin-key-2", "confirm-pin-key-3", "confirm-pin-key-4", "dashboard-screen"]
+      }
+    ],
+    "design_issues": [
+      {"screen": "Onboarding - Welcome/Currency/PIN", "issues": ["Layout, spacing, contrast look fine on 375x667 viewport. Brand color #FF5E00 renders correctly. Touch targets appear >=44px."]}
+    ],
+    "react_native_issues": [
+      {"component": "expo-av", "issue": "Deprecated package likely present in dependency tree (check package.json). Migrate to expo-audio for audio and expo-video for video. Reference: /app/frontend/package.json"},
+      {"component": "RN Web style props", "issue": "Console warnings: 'shadow* style props are deprecated. Use boxShadow.' and 'props.pointerEvents is deprecated. Use style.pointerEvents.' Update styles to use boxShadow and style.pointerEvents."}
+    ]
+  },
+  "test_report_links": [],
+  "action_items": [
+    "Remove the `await refresh()` call inside onboarding.tsx `finish({skipPin:true})` (and consider similar cleanup in handleFinishWithPin). markOnboarded/setCurrency already update local state; refresh() re-reads from a DB that is empty on web and clobbers the just-set flag, breaking navigation to Dashboard on the web preview.",
+    "Fix stale-closure bug in PIN confirm: modify PinPad to call onSubmit(next) with the completed value, or in onboarding.tsx trigger the match via useEffect on pin2 length, or pass a ref. Currently identical PINs always mismatch.",
+    "Guard expo-sqlite import behind Platform.OS !== 'web' (dynamic import) or add a web shim to avoid the initial bundle error and make offline behavior explicit.",
+    "Audit package.json for deprecated Expo packages (expo-av, expo-barcode-scanner, expo-background-fetch) and migrate.",
+    "Replace shadow* style props with boxShadow and props.pointerEvents with style.pointerEvents to silence RN Web deprecation warnings."
+  ],
+  "critical_code_review_comments": [
+    "onboarding.tsx#finish: refresh() after markOnboarded() defeats optimistic local state update; either drop refresh() or make loadAll() preserve locally-set truthy values when DB is unavailable.",
+    "PinPad.tsx:26: setTimeout(onSubmit, 80) invokes a stale closure. Pass the resolved value: setTimeout(() => onSubmit(next), 80) and update consumers accordingly, or use useLayoutEffect on value change.",
+    "db.ts: bundle-time import of expo-sqlite forces a wasm resolution error on web; a platform-conditional import would be cleaner.",
+    "Consider persisting simple settings (currency, onboarded, theme, pin) via AsyncStorage / expo-secure-store as a fallback on web/native to make first-run flows resilient when sqlite is unavailable."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "N/A (frontend-only)", "frontend": "~30% (welcome, currency, pin-setup screens render; skip-PIN & full-PIN → dashboard both broken; tabs/settings/txn/reports untestable on web)"},
+  "seed_data_creation": "None. App is offline and starts empty.",
+  "retest_needed": true,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Two blocker bugs prevent reaching Dashboard on web: (1) refresh() in onboarding wipes onboarded state after Skip PIN because expo-sqlite is null on web. (2) PIN confirm has stale-closure causing false 'PINs do not match'. After main agent fixes these, retest full onboarding flow, all 4 tabs (index, transactions, analytics, settings), FAB → transaction/add form (all fields), Settings modals (currency/theme/pin/biometric/clear/about/privacy), Categories add flow, Reports screen. Note web preview cannot persist transactions (expo-sqlite web worker broken); testing agent should only verify UI renders + save-button click does not crash. Test on mobile viewport 375x667. Base URL: https://transaction-hub-316.preview.emergentagent.com",
+  "rca_of_issue": "BUG 1 (Skip PIN → Dashboard): onboarding.tsx `finish({skipPin:true})` awaits markOnboarded() (sets onboarded=true in state, tries DB write which no-ops on web), then awaits refresh() which triggers loadAll(). loadAll() reads onboarded from settingsRepo.get('onboarded') → null (DB is null on web) → setOnboarded(false). AuthGate's useEffect then sees onboarded=false and calls router.replace('/onboarding'), bouncing the user back. Fix: remove refresh() after markOnboarded() in the skip path; state is already correct locally. BUG 2 (Full PIN mismatch): PinPad's press() runs onChange(next) then setTimeout(onSubmit, 80). Between renders, `onSubmit` prop given to PinPad in onboarding is `handleFinishWithPin`, which captures the current pin2 in its closure. When 4th key is pressed: (i) onChange('1234') schedules setPin2('1234'), (ii) setTimeout fires the closure that was captured at the previous render where pin2 was '123', so it computes pin1('1234') !== pin2('123') → error. Reproduction: Get Started → Continue → tap 1,2,3,4 → auto-advance to confirm → tap 1,2,3,4 → 'PINs do not match'. Mitigation: change PinPad to call onSubmit(next) and update handleFinishWithPin(confirmValue: string) to compare pin1 with confirmValue instead of pin2 state."
+}
