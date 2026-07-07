@@ -43,8 +43,9 @@ export default function LockScreen() {
     } catch {}
   };
 
-  const handleSubmit = async () => {
-    const ok = await verifyPin(pin);
+  const handleSubmit = async (submittedValue?: string) => {
+    const candidate = submittedValue ?? pin;
+    const ok = await verifyPin(candidate);
     if (ok) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       router.replace("/(tabs)");
@@ -66,7 +67,7 @@ export default function LockScreen() {
         <PinPad
           value={pin}
           onChange={(v) => { setPin(v); if (error) setError(null); }}
-          onSubmit={handleSubmit}
+          onSubmit={(v) => handleSubmit(v)}
           onBiometric={tryBiometric}
           biometricAvailable={biometricAvailable}
           error={error}

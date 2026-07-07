@@ -38,8 +38,9 @@ export default function Settings() {
     setBiometricEnabled(v);
   };
 
-  const handleSetPin = async () => {
-    if (pin1 !== pin2) {
+  const handleSetPin = async (confirmValue?: string) => {
+    const confirm = confirmValue ?? pin2;
+    if (pin1 !== confirm) {
       setError("PINs do not match");
       setPin2("");
       return;
@@ -169,7 +170,7 @@ export default function Settings() {
             <PinPad
               value={modal === "pin_set" ? pin1 : pin2}
               onChange={(v) => { if (modal === "pin_set") setPin1(v); else setPin2(v); if (error) setError(null); }}
-              onSubmit={() => modal === "pin_set" ? setModal("pin_confirm") : handleSetPin()}
+              onSubmit={(v) => { if (modal === "pin_set") { setModal("pin_confirm"); } else { handleSetPin(v); } }}
               error={error}
               testIDPrefix={modal === "pin_set" ? "set-pin" : "confirm-pin"}
             />

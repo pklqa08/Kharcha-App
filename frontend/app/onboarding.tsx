@@ -28,14 +28,14 @@ export default function Onboarding() {
     await setCurrency(selectedCurrency);
     if (opts?.skipPin) {
       await markOnboarded();
-      await refresh();
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       router.replace("/(tabs)");
     }
   };
 
-  const handleFinishWithPin = async () => {
-    if (pin1 !== pin2) {
+  const handleFinishWithPin = async (confirmValue?: string) => {
+    const confirm = confirmValue ?? pin2;
+    if (pin1 !== confirm) {
       setError("PINs do not match");
       setPin2("");
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
@@ -44,7 +44,6 @@ export default function Onboarding() {
     await savePin(pin1);
     await setCurrency(selectedCurrency);
     await markOnboarded();
-    await refresh();
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     router.replace("/(tabs)");
   };
@@ -128,7 +127,7 @@ export default function Onboarding() {
               <PinPad
                 value={pin2}
                 onChange={(v) => { setPin2(v); setError(null); }}
-                onSubmit={handleFinishWithPin}
+                onSubmit={(v) => handleFinishWithPin(v)}
                 error={error}
                 testIDPrefix="confirm-pin"
               />

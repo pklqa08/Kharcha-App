@@ -1,0 +1,35 @@
+{
+  "summary": "Retested Kharcha Expo mobile app on web preview (375x667). Both iteration-1 blockers are FIXED: (1) Skip-PIN path now lands on Dashboard successfully — removing `await refresh()` after markOnboarded() prevented the settings from being clobbered by the no-op web SQLite read. (2) Full-PIN path now completes without spurious 'PINs do not match' — PinPad.onSubmit now receives the final value and all consumers pass it through. Full end-to-end retest passed: onboarding welcome → currency → pin_setup → skip / pin_confirm → Dashboard renders (balance hero, today stats, quick actions, FAB, empty recent activity). All 4 bottom tabs (tab-index, tab-transactions, tab-analytics, tab-settings) navigate without errors. FAB (fab-add) opens Add Transaction (txn-form-screen) with type toggle, amount, category, merchant, payment mode chips, date/time, notes, save. Quick Reports opens reports-screen with all three period chips (report-day, report-month, report-year). Settings shows all 11 rows (currency, theme, pin, biometric, categories, reports, backup, notifications, clear, about, privacy). Theme modal opens, selecting an option closes it and updates theme live. Currency modal opens and closes cleanly. Categories screen renders with cat-tab-expense/cat-tab-income (empty grid on web is expected — expo-sqlite unavailable). Deprecated packages detected: expo-av still present in package.json (needs migration to expo-audio/expo-video). Console emits RN-Web deprecation warnings: 'shadow*' style props and props.pointerEvents — cosmetic but should be cleaned up.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "Add Transaction (txn-form-screen)", "issues": ["Fields visually appear slightly clipped to the left edge on 375px viewport in screenshot; verify horizontal padding of the form container is symmetrical (labels 'AMOUNT', 'CATEGORY', 'MERCHANT', 'PAYMENT MODE', 'DATE & TIME', 'NOTES' should not be cut off)."]}
+    ],
+    "react_native_issues": [
+      {"component": "expo-av", "issue": "Deprecated package present. Migrate to expo-audio (audio) and expo-video (video). Reference: /app/frontend/package.json"},
+      {"component": "RN-Web style props", "issue": "Console warnings: '\"shadow*\" style props are deprecated. Use \"boxShadow\".' and 'props.pointerEvents is deprecated. Use style.pointerEvents.' Replace shadow* / pointerEvents props across the codebase."},
+      {"component": "expo-sqlite web", "issue": "expo-sqlite is imported unconditionally; on web preview it falls back silently and prevents persistence. Consider gating the import behind Platform.OS !== 'web' or provide a web shim (AsyncStorage) so first-run flows survive without the destructive DB read. Reference: /app/frontend/src/data/db.ts"}
+    ]
+  },
+  "test_report_links": [],
+  "action_items": [
+    "Migrate expo-av → expo-audio/expo-video in package.json and any consumer code.",
+    "Replace shadow* style props with boxShadow; move props.pointerEvents into style.pointerEvents to silence RN-Web deprecation warnings.",
+    "(Nice-to-have) Guard expo-sqlite import behind Platform.OS check, or provide AsyncStorage/expo-secure-store fallback for settings on web so persistence works in preview environment.",
+    "Verify horizontal padding of the Add Transaction form on 375px viewport (labels appeared slightly clipped left in screenshot)."
+  ],
+  "critical_code_review_comments": [
+    "onboarding.tsx: fixes are minimal and correct. Consider also removing refresh() after handleFinishWithPin — markOnboarded/savePin already updated in-memory state and refresh() re-reads a DB that is empty on web (same class of bug the skip path just had). Currently harmless because refresh here runs before router.replace, but same risk if load order changes.",
+    "PinPad.tsx:26 — setTimeout(() => onSubmit(next), 80) now passes the current value; good. Signature (value: string) => void enforced across all consumers.",
+    "settings.tsx handleSetPin — same signature pattern used (accepts confirmValue) — verified correct."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "N/A (frontend-only)", "frontend": "~95% (all requested flows now pass; only outstanding items are deprecation warnings and web persistence, which are pre-existing environmental limitations)"},
+  "seed_data_creation": "None; app is offline-first and starts empty.",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Iter 2: both blocker fixes verified. Full onboarding (skip & full-PIN), 4-tab navigation, FAB→txn-form, quick actions (add/ledger/insights/reports), Reports (day/month/year chips), Settings (all 11 rows), Theme modal (open/select/close/live update), Currency modal (open/close), Categories screen (tabs) all render/navigate correctly. Persistence cannot be verified on web (expo-sqlite web shim absent) — save button click does not crash but data does not persist across reloads. Deprecated packages still present: expo-av. Base URL: https://transaction-hub-316.preview.emergentagent.com",
+  "rca_of_issue": "Not applicable — both blockers from iteration 1 are resolved. Skip-PIN now bypasses the destructive refresh(); full-PIN passes the final 4th digit into onSubmit(value) so handleFinishWithPin compares pin1 against the freshly-completed confirm value instead of stale state."
+}

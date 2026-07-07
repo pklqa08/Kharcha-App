@@ -7,7 +7,7 @@ import { useTheme, spacing, radius, mono } from "../core/theme";
 interface PinPadProps {
   value: string;
   onChange: (v: string) => void;
-  onSubmit?: () => void;
+  onSubmit?: (value: string) => void;
   onBiometric?: () => void;
   error?: string | null;
   length?: number;
@@ -23,7 +23,7 @@ export const PinPad: React.FC<PinPadProps> = ({ value, onChange, onSubmit, onBio
     if (value.length < length) {
       const next = value + n;
       onChange(next);
-      if (next.length === length && onSubmit) setTimeout(onSubmit, 80);
+      if (next.length === length && onSubmit) setTimeout(() => onSubmit(next), 80);
     }
   };
   const back = () => {
