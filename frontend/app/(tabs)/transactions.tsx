@@ -5,13 +5,13 @@ import { useRouter, useFocusEffect } from "expo-router";
 import { Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 
-import { useTheme, spacing, radius } from "@/src/shared/theme/theme";
+import { useTheme, spacing, radius } from "@/src/presentation/theme/theme";
 import { useSettings } from "@/src/application/providers/AppProviders";
 import { useCategoryProvider, useTransactionProvider } from "@/src/application/providers";
 import { TxnType } from "@/src/domain/entities/models";
 import { groupByDay } from "@/src/domain/services/format";
-import { Chip, EmptyState, ScreenHeader } from "@/src/presentation/widgets/ui";
-import { TransactionRow } from "@/src/presentation/widgets/TransactionRow";
+import { Chip, EmptyState, ScreenHeader } from "@/src/presentation/components/ui";
+import { TransactionRow } from "@/src/presentation/components/TransactionRow";
 
 type Filter = "all" | "income" | "expense";
 

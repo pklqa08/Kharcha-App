@@ -6,12 +6,12 @@ import { Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import dayjs from "dayjs";
 
-import { useTheme, spacing, radius, mono } from "@/src/shared/theme/theme";
+import { useTheme, spacing, radius, mono } from "@/src/presentation/theme/theme";
 import { useSettings } from "@/src/application/providers/AppProviders";
 import { useDashboardProvider } from "@/src/application/providers";
 import { getCurrency, formatAmount } from "@/src/domain/services/currencies";
-import { StatCard, SectionHeader, EmptyState } from "@/src/presentation/widgets/ui";
-import { TransactionRow } from "@/src/presentation/widgets/TransactionRow";
+import { StatCard, SectionHeader, EmptyState } from "@/src/presentation/components/ui";
+import { TransactionRow } from "@/src/presentation/components/TransactionRow";
 
 export default function Dashboard() {
   const { palette } = useTheme();

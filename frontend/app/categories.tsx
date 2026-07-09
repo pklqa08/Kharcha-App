@@ -5,9 +5,9 @@ import { useRouter } from "expo-router";
 import { Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 
-import { useTheme, spacing, radius } from "@/src/shared/theme/theme";
+import { useTheme, spacing, radius } from "@/src/presentation/theme/theme";
 import { useCategoryProvider } from "@/src/application/providers";
-import { ScreenHeader, PrimaryButton, Chip, EmptyState } from "@/src/presentation/widgets/ui";
+import { ScreenHeader, PrimaryButton, Chip, EmptyState } from "@/src/presentation/components/ui";
 
 const ICON_OPTIONS: Array<keyof typeof Feather.glyphMap> = [
   "coffee", "shopping-cart", "shopping-bag", "truck", "film", "zap",

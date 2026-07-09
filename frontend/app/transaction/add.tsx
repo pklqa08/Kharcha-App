@@ -7,12 +7,12 @@ import { Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import dayjs from "dayjs";
 
-import { useTheme, spacing, radius, mono } from "@/src/shared/theme/theme";
+import { useTheme, spacing, radius, mono } from "@/src/presentation/theme/theme";
 import { useCategoryProvider, useTransactionProvider } from "@/src/application/providers";
 import { useSettings } from "@/src/application/providers/AppProviders";
 import { PaymentMode, TxnType } from "@/src/domain/entities/models";
 import { getCurrency } from "@/src/domain/services/currencies";
-import { ScreenHeader, PrimaryButton, Chip } from "@/src/presentation/widgets/ui";
+import { ScreenHeader, PrimaryButton, Chip } from "@/src/presentation/components/ui";
 
 const PAYMENT_MODES: PaymentMode[] = ["cash", "upi", "card", "netbanking", "wallet", "other"];
 

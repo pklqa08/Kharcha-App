@@ -6,13 +6,13 @@ import { Feather } from "@expo/vector-icons";
 import * as LocalAuthentication from "expo-local-authentication";
 import * as Haptics from "expo-haptics";
 
-import { useTheme, spacing, radius, mono } from "@/src/shared/theme/theme";
+import { useTheme, spacing, radius, mono } from "@/src/presentation/theme/theme";
 import { useSettings } from "@/src/application/providers/AppProviders";
 import { useTransactionProvider } from "@/src/application/providers";
 import { CURRENCIES, getCurrency } from "@/src/domain/services/currencies";
-import { ScreenHeader } from "@/src/presentation/widgets/ui";
+import { ScreenHeader } from "@/src/presentation/components/ui";
 import { clearPin, savePin } from "@/src/domain/services/pin";
-import { PinPad } from "@/src/presentation/widgets/PinPad";
+import { PinPad } from "@/src/presentation/components/PinPad";
 
 type Modal = null | "theme" | "currency" | "about" | "privacy" | "pin_set" | "pin_confirm" | "clear_confirm";
 

@@ -5,8 +5,8 @@ import { useRouter } from "expo-router";
 import * as LocalAuthentication from "expo-local-authentication";
 import * as Haptics from "expo-haptics";
 
-import { useTheme, spacing, mono } from "@/src/shared/theme/theme";
-import { PinPad } from "@/src/presentation/widgets/PinPad";
+import { useTheme, spacing, mono } from "@/src/presentation/theme/theme";
+import { PinPad } from "@/src/presentation/components/PinPad";
 import { verifyPin } from "@/src/domain/services/pin";
 import { useSettings } from "@/src/application/providers/AppProviders";
 

@@ -1,7 +1,7 @@
 import React from "react";
 import { View, Text, StyleSheet, ViewStyle, TextStyle, Pressable } from "react-native";
-import { useTheme } from "@/src/shared/theme/theme";
-import { spacing, radius, mono } from "@/src/shared/theme/theme";
+import { useTheme } from "@/src/presentation/theme/theme";
+import { spacing, radius, mono } from "@/src/presentation/theme/theme";
 import { Feather } from "@expo/vector-icons";
 
 /* -------- Card -------- */

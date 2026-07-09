@@ -1,5 +1,5 @@
 import { getRequiredDb } from "@/src/infrastructure/repositories/sqlite.helpers";
-import { storage } from "@/src/shared/storage";
+import { storage } from "@/src/infrastructure/storage";
 
 export const settingsRepo = {
   get: async (key: string): Promise<string | null> => {

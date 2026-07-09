@@ -1,4 +1,4 @@
-import { DateRange, EntityId, TxnType } from "../value-objects";
+import { DateRange, EntityId, TxnType } from "../value_objects";
 
 export interface TotalsSummary {
   income: number;

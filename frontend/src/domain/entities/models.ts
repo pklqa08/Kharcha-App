@@ -5,7 +5,7 @@ import {
   PaymentMode,
   TransactionStatus,
   TxnType,
-} from "../value-objects";
+} from "../value_objects";
 
 export type { CategoryType, PaymentMode, TxnType };
 

@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { View, ActivityIndicator } from "react-native";
 import { useRouter } from "expo-router";
 import { useSettings } from "@/src/application/providers/AppProviders";
-import { useTheme } from "@/src/shared/theme/theme";
+import { useTheme } from "@/src/presentation/theme/theme";
 
 export default function Index() {
   const { ready, onboarded, pinSet } = useSettings();

@@ -1,4 +1,4 @@
-import { EntityId, TxnType } from "../value-objects";
+import { EntityId, TxnType } from "../value_objects";
 
 export interface TransactionFilters {
   search?: string;

@@ -5,11 +5,11 @@ import { useRouter } from "expo-router";
 import * as Haptics from "expo-haptics";
 import { Feather } from "@expo/vector-icons";
 
-import { useTheme, spacing, radius, mono } from "@/src/shared/theme/theme";
+import { useTheme, spacing, radius, mono } from "@/src/presentation/theme/theme";
 import { useSettings } from "@/src/application/providers/AppProviders";
 import { CURRENCIES } from "@/src/domain/services/currencies";
-import { PrimaryButton } from "@/src/presentation/widgets/ui";
-import { PinPad } from "@/src/presentation/widgets/PinPad";
+import { PrimaryButton } from "@/src/presentation/components/ui";
+import { PinPad } from "@/src/presentation/components/PinPad";
 import { savePin } from "@/src/domain/services/pin";
 
 type Step = "welcome" | "currency" | "pin_setup" | "pin_confirm";

@@ -4,12 +4,12 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import dayjs from "dayjs";
 
-import { useTheme, spacing, radius, mono } from "@/src/shared/theme/theme";
+import { useTheme, spacing, radius, mono } from "@/src/presentation/theme/theme";
 import { useTransactionProvider } from "@/src/application/providers";
 import { useSettings } from "@/src/application/providers/AppProviders";
 import { getCurrency, formatAmount } from "@/src/domain/services/currencies";
 import { startOfDay, endOfDay, startOfMonth, endOfMonth, startOfYear, endOfYear } from "@/src/domain/services/format";
-import { ScreenHeader, Card, Chip, SectionHeader, EmptyState } from "@/src/presentation/widgets/ui";
+import { ScreenHeader, Card, Chip, SectionHeader, EmptyState } from "@/src/presentation/components/ui";
 
 type Period = "day" | "month" | "year";
 

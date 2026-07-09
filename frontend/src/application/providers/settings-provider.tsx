@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
 import { Appearance } from "react-native";
 
-import { ThemeContext, ThemeMode, LightPalette, DarkPalette, Palette } from "@/src/shared/theme/theme";
+import { ThemeContext, ThemeMode, LightPalette, DarkPalette, Palette } from "@/src/presentation/theme/theme";
 import { settingsRepo } from "@/src/infrastructure/repositories/repos";
 
 export const SETTINGS_KEYS = {

@@ -4,12 +4,12 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useFocusEffect } from "expo-router";
 import { PieChart, BarChart } from "react-native-gifted-charts";
 
-import { useTheme, spacing, radius, mono } from "@/src/shared/theme/theme";
+import { useTheme, spacing, radius, mono } from "@/src/presentation/theme/theme";
 import { useSettings } from "@/src/application/providers/AppProviders";
 import { useMerchantProvider, useTransactionProvider } from "@/src/application/providers";
 import { getCurrency, formatAmount } from "@/src/domain/services/currencies";
 import { startOfMonth, endOfMonth, startOfDay, endOfDay } from "@/src/domain/services/format";
-import { Chip, EmptyState, ScreenHeader, Card, SectionHeader } from "@/src/presentation/widgets/ui";
+import { Chip, EmptyState, ScreenHeader, Card, SectionHeader } from "@/src/presentation/components/ui";
 import dayjs from "dayjs";
 
 type Range = "week" | "month" | "year";

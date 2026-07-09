@@ -6,9 +6,9 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 
-import { useIconFonts } from "@/src/application/hooks/use-icon-fonts";
+import { useIconFonts } from "@/src/presentation/hooks/use-icon-fonts";
 import { AppProviders, useSettings } from "@/src/application/providers/AppProviders";
-import { useTheme } from "@/src/shared/theme/theme";
+import { useTheme } from "@/src/presentation/theme/theme";
 import { getDb } from "@/src/infrastructure/database/db";
 
 LogBox.ignoreAllLogs(true);
