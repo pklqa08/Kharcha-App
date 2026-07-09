@@ -4,12 +4,12 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useFocusEffect } from "expo-router";
 import { PieChart, BarChart } from "react-native-gifted-charts";
 
-import { useTheme, spacing, radius, mono } from "@/src/core/theme";
-import { useSettings } from "@/src/providers/AppProviders";
-import { transactionRepo } from "@/src/data/repos";
-import { getCurrency, formatAmount } from "@/src/core/currencies";
-import { startOfMonth, endOfMonth, startOfDay, endOfDay } from "@/src/core/format";
-import { Chip, EmptyState, ScreenHeader, Card, SectionHeader } from "@/src/widgets/ui";
+import { useTheme, spacing, radius, mono } from "@/src/shared/theme/theme";
+import { useSettings } from "@/src/application/providers/AppProviders";
+import { useMerchantProvider, useTransactionProvider } from "@/src/application/providers";
+import { getCurrency, formatAmount } from "@/src/domain/services/currencies";
+import { startOfMonth, endOfMonth, startOfDay, endOfDay } from "@/src/domain/services/format";
+import { Chip, EmptyState, ScreenHeader, Card, SectionHeader } from "@/src/presentation/widgets/ui";
 import dayjs from "dayjs";
 
 type Range = "week" | "month" | "year";
@@ -17,11 +17,12 @@ type Range = "week" | "month" | "year";
 export default function Analytics() {
   const { palette } = useTheme();
   const { currency } = useSettings();
+  const { totalsBetween, categoryBreakdown, dailySeries } = useTransactionProvider();
+  const { merchants, loadTopMerchants } = useMerchantProvider();
   const cur = getCurrency(currency);
   const [range, setRange] = useState<Range>("month");
   const [totals, setTotals] = useState({ income: 0, expense: 0 });
   const [breakdown, setBreakdown] = useState<Array<{ name: string; color: string; total: number; icon: string }>>([]);
-  const [merchants, setMerchants] = useState<Array<{ merchant: string; total: number; count: number }>>([]);
   const [daily, setDaily] = useState<Array<{ date: string; income: number; expense: number }>>([]);
 
   const load = useCallback(async () => {
@@ -30,17 +31,16 @@ export default function Analytics() {
       range === "month" ? startOfMonth() :
       startOfDay(dayjs().startOf("year").toDate());
     const to = endOfDay();
-    const [t, b, m, d] = await Promise.all([
-      transactionRepo.totalsBetween(from, to),
-      transactionRepo.categoryBreakdown(from, to, "debit"),
-      transactionRepo.topMerchants(from, to, 5),
-      transactionRepo.dailySeries(from, to),
+    const [t, b, d] = await Promise.all([
+      totalsBetween(from, to),
+      categoryBreakdown(from, to, "debit"),
+      dailySeries(from, to),
     ]);
+    await loadTopMerchants(from, to, 5);
     setTotals(t);
     setBreakdown(b.map((x) => ({ name: x.name, color: x.color, total: x.total, icon: x.icon })));
-    setMerchants(m);
     setDaily(d);
-  }, [range]);
+  }, [range, totalsBetween, categoryBreakdown, dailySeries, loadTopMerchants]);
 
   useEffect(() => { load(); }, [load]);
   useFocusEffect(useCallback(() => { load(); }, [load]));

@@ -1,41 +1,45 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { View, Text, ScrollView, StyleSheet, Pressable, TextInput, FlatList } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter, useFocusEffect } from "expo-router";
 import { Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 
-import { useTheme, spacing, radius } from "@/src/core/theme";
-import { useSettings } from "@/src/providers/AppProviders";
-import { transactionRepo, categoryRepo } from "@/src/data/repos";
-import { Transaction, Category, TxnType } from "@/src/data/models";
-import { groupByDay } from "@/src/core/format";
-import { Chip, EmptyState, ScreenHeader } from "@/src/widgets/ui";
-import { TransactionRow } from "@/src/widgets/TransactionRow";
+import { useTheme, spacing, radius } from "@/src/shared/theme/theme";
+import { useSettings } from "@/src/application/providers/AppProviders";
+import { useCategoryProvider, useTransactionProvider } from "@/src/application/providers";
+import { TxnType } from "@/src/domain/entities/models";
+import { groupByDay } from "@/src/domain/services/format";
+import { Chip, EmptyState, ScreenHeader } from "@/src/presentation/widgets/ui";
+import { TransactionRow } from "@/src/presentation/widgets/TransactionRow";
 
 type Filter = "all" | "income" | "expense";
 
 export default function Transactions() {
   const { palette } = useTheme();
   const { currency } = useSettings();
+  const { transactions: txns, loadTransactions, deleteTransaction } = useTransactionProvider();
+  const { categories, loadCategories } = useCategoryProvider();
   const router = useRouter();
 
-  const [txns, setTxns] = useState<Transaction[]>([]);
-  const [cats, setCats] = useState<Record<string, Category>>({});
   const [filter, setFilter] = useState<Filter>("all");
   const [search, setSearch] = useState("");
 
+  const cats = useMemo(() => {
+    const map: Record<string, (typeof categories)[number]> = {};
+    categories.forEach((c) => {
+      map[c.id] = c;
+    });
+    return map;
+  }, [categories]);
+
   const load = useCallback(async () => {
     const type: TxnType | undefined = filter === "income" ? "credit" : filter === "expense" ? "debit" : undefined;
-    const [list, catsList] = await Promise.all([
-      transactionRepo.list({ type, search: search.trim() || undefined }),
-      categoryRepo.list(),
+    await Promise.all([
+      loadTransactions({ type, search: search.trim() || undefined }),
+      loadCategories(),
     ]);
-    setTxns(list);
-    const map: Record<string, Category> = {};
-    catsList.forEach((c) => (map[c.id] = c));
-    setCats(map);
-  }, [filter, search]);
+  }, [filter, search, loadTransactions, loadCategories]);
 
   useEffect(() => { load(); }, [load]);
   useFocusEffect(useCallback(() => { load(); }, [load]));
@@ -44,7 +48,7 @@ export default function Transactions() {
 
   const handleDelete = async (id: string) => {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-    await transactionRepo.remove(id);
+    await deleteTransaction(id);
     load();
   };
 

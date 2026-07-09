@@ -1,8 +1,8 @@
 import { useEffect } from "react";
 import { View, ActivityIndicator } from "react-native";
 import { useRouter } from "expo-router";
-import { useSettings } from "@/src/providers/AppProviders";
-import { useTheme } from "@/src/core/theme";
+import { useSettings } from "@/src/application/providers/AppProviders";
+import { useTheme } from "@/src/shared/theme/theme";
 
 export default function Index() {
   const { ready, onboarded, pinSet } = useSettings();
@@ -11,7 +11,9 @@ export default function Index() {
 
   useEffect(() => {
     if (!ready) return;
-    if (!onboarded) {
+
+    // During development we keep onboarding first for easier flow verification.
+    if (__DEV__ || !onboarded) {
       router.replace("/onboarding");
     } else if (pinSet) {
       router.replace("/lock");

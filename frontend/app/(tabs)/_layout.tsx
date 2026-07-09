@@ -5,7 +5,7 @@ import { View, Text, Pressable, StyleSheet, Platform } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { BlurView } from "expo-blur";
 import * as Haptics from "expo-haptics";
-import { useTheme, spacing } from "@/src/core/theme";
+import { useTheme, spacing } from "@/src/shared/theme/theme";
 
 const TAB_ITEMS: Array<{ name: string; label: string; icon: keyof typeof Feather.glyphMap }> = [
   { name: "index", label: "Home", icon: "home" },

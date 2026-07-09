@@ -6,48 +6,27 @@ import { Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import dayjs from "dayjs";
 
-import { useTheme, spacing, radius, mono } from "@/src/core/theme";
-import { useSettings } from "@/src/providers/AppProviders";
-import { transactionRepo, categoryRepo } from "@/src/data/repos";
-import { Transaction, Category } from "@/src/data/models";
-import { getCurrency, formatAmount } from "@/src/core/currencies";
-import { startOfDay, endOfDay, startOfMonth, endOfMonth } from "@/src/core/format";
-import { StatCard, SectionHeader, EmptyState } from "@/src/widgets/ui";
-import { TransactionRow } from "@/src/widgets/TransactionRow";
+import { useTheme, spacing, radius, mono } from "@/src/shared/theme/theme";
+import { useSettings } from "@/src/application/providers/AppProviders";
+import { useDashboardProvider } from "@/src/application/providers";
+import { getCurrency, formatAmount } from "@/src/domain/services/currencies";
+import { StatCard, SectionHeader, EmptyState } from "@/src/presentation/widgets/ui";
+import { TransactionRow } from "@/src/presentation/widgets/TransactionRow";
 
 export default function Dashboard() {
   const { palette } = useTheme();
   const { currency } = useSettings();
+  const { today, month, recent, categoriesMap, loadDashboard } = useDashboardProvider();
   const cur = getCurrency(currency);
   const router = useRouter();
-
-  const [today, setToday] = useState({ income: 0, expense: 0 });
-  const [month, setMonth] = useState({ income: 0, expense: 0 });
-  const [recent, setRecent] = useState<Transaction[]>([]);
-  const [categoriesMap, setCategoriesMap] = useState<Record<string, Category>>({});
   const [refreshing, setRefreshing] = useState(false);
 
-  const load = useCallback(async () => {
-    const [tSum, mSum, list, cats] = await Promise.all([
-      transactionRepo.totalsBetween(startOfDay(), endOfDay()),
-      transactionRepo.totalsBetween(startOfMonth(), endOfMonth()),
-      transactionRepo.list({ limit: 6 }),
-      categoryRepo.list(),
-    ]);
-    setToday(tSum);
-    setMonth(mSum);
-    setRecent(list);
-    const map: Record<string, Category> = {};
-    cats.forEach((c) => { map[c.id] = c; });
-    setCategoriesMap(map);
-  }, []);
-
-  useFocusEffect(useCallback(() => { load(); }, [load]));
-  useEffect(() => { load(); }, [load]);
+  useFocusEffect(useCallback(() => { loadDashboard(); }, [loadDashboard]));
+  useEffect(() => { loadDashboard(); }, [loadDashboard]);
 
   const onRefresh = async () => {
     setRefreshing(true);
-    await load();
+    await loadDashboard();
     setRefreshing(false);
   };
 

@@ -5,10 +5,9 @@ import { useRouter } from "expo-router";
 import { Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 
-import { useTheme, spacing, radius } from "@/src/core/theme";
-import { ScreenHeader, PrimaryButton, Chip, EmptyState } from "@/src/widgets/ui";
-import { categoryRepo } from "@/src/data/repos";
-import { Category } from "@/src/data/models";
+import { useTheme, spacing, radius } from "@/src/shared/theme/theme";
+import { useCategoryProvider } from "@/src/application/providers";
+import { ScreenHeader, PrimaryButton, Chip, EmptyState } from "@/src/presentation/widgets/ui";
 
 const ICON_OPTIONS: Array<keyof typeof Feather.glyphMap> = [
   "coffee", "shopping-cart", "shopping-bag", "truck", "film", "zap",
@@ -21,30 +20,30 @@ const COLORS = ["#FF5E00", "#00B359", "#4A90E2", "#E91E63", "#9C27B0", "#FFC200"
 
 export default function CategoriesScreen() {
   const { palette } = useTheme();
+  const { categories: cats, loadCategories, createCategory, removeCategory } = useCategoryProvider();
   const router = useRouter();
   const [tab, setTab] = useState<"expense" | "income">("expense");
-  const [cats, setCats] = useState<Category[]>([]);
   const [adding, setAdding] = useState(false);
   const [name, setName] = useState("");
   const [icon, setIcon] = useState<keyof typeof Feather.glyphMap>("shopping-cart");
   const [color, setColor] = useState(COLORS[0]);
 
   const load = useCallback(async () => {
-    setCats(await categoryRepo.list(tab));
-  }, [tab]);
+    await loadCategories(tab);
+  }, [tab, loadCategories]);
 
   useEffect(() => { load(); }, [load]);
 
   const create = async () => {
     if (!name.trim()) return;
-    await categoryRepo.create(name.trim(), tab, icon, color);
+    await createCategory(name.trim(), tab, icon, color);
     setName(""); setAdding(false);
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     load();
   };
 
   const remove = async (id: string) => {
-    await categoryRepo.remove(id);
+    await removeCategory(id);
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
     load();
   };

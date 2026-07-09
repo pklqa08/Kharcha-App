@@ -6,19 +6,20 @@ import { Feather } from "@expo/vector-icons";
 import * as LocalAuthentication from "expo-local-authentication";
 import * as Haptics from "expo-haptics";
 
-import { useTheme, spacing, radius, mono } from "@/src/core/theme";
-import { useSettings } from "@/src/providers/AppProviders";
-import { CURRENCIES, getCurrency } from "@/src/core/currencies";
-import { ScreenHeader } from "@/src/widgets/ui";
-import { transactionRepo } from "@/src/data/repos";
-import { clearPin, savePin } from "@/src/core/pin";
-import { PinPad } from "@/src/widgets/PinPad";
+import { useTheme, spacing, radius, mono } from "@/src/shared/theme/theme";
+import { useSettings } from "@/src/application/providers/AppProviders";
+import { useTransactionProvider } from "@/src/application/providers";
+import { CURRENCIES, getCurrency } from "@/src/domain/services/currencies";
+import { ScreenHeader } from "@/src/presentation/widgets/ui";
+import { clearPin, savePin } from "@/src/domain/services/pin";
+import { PinPad } from "@/src/presentation/widgets/PinPad";
 
 type Modal = null | "theme" | "currency" | "about" | "privacy" | "pin_set" | "pin_confirm" | "clear_confirm";
 
 export default function Settings() {
   const { palette, isDark } = useTheme();
   const { themeMode, setThemeMode, currency, setCurrency, pinSet, biometricEnabled, setBiometricEnabled, refresh } = useSettings();
+  const { clearTransactions } = useTransactionProvider();
   const router = useRouter();
   const [modal, setModal] = useState<Modal>(null);
   const [pin1, setPin1] = useState("");
@@ -60,7 +61,7 @@ export default function Settings() {
   };
 
   const handleClearData = async () => {
-    await transactionRepo.clearAll();
+    await clearTransactions();
     setModal(null);
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
   };

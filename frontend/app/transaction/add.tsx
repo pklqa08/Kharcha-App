@@ -7,17 +7,19 @@ import { Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import dayjs from "dayjs";
 
-import { useTheme, spacing, radius, mono } from "@/src/core/theme";
-import { useSettings } from "@/src/providers/AppProviders";
-import { transactionRepo, categoryRepo } from "@/src/data/repos";
-import { Category, PaymentMode, TxnType } from "@/src/data/models";
-import { getCurrency } from "@/src/core/currencies";
-import { ScreenHeader, PrimaryButton, Chip } from "@/src/widgets/ui";
+import { useTheme, spacing, radius, mono } from "@/src/shared/theme/theme";
+import { useCategoryProvider, useTransactionProvider } from "@/src/application/providers";
+import { useSettings } from "@/src/application/providers/AppProviders";
+import { PaymentMode, TxnType } from "@/src/domain/entities/models";
+import { getCurrency } from "@/src/domain/services/currencies";
+import { ScreenHeader, PrimaryButton, Chip } from "@/src/presentation/widgets/ui";
 
 const PAYMENT_MODES: PaymentMode[] = ["cash", "upi", "card", "netbanking", "wallet", "other"];
 
 export default function AddEditTransaction() {
   const { palette } = useTheme();
+  const { categories, loadCategories } = useCategoryProvider();
+  const { getTransactionById, saveTransaction, deleteTransaction } = useTransactionProvider();
   const { currency } = useSettings();
   const cur = getCurrency(currency);
   const router = useRouter();
@@ -32,20 +34,23 @@ export default function AddEditTransaction() {
   const [paymentMode, setPaymentMode] = useState<PaymentMode>("upi");
   const [date, setDate] = useState<Date>(new Date());
   const [showDatePicker, setShowDatePicker] = useState<null | "date" | "time">(null);
-  const [categories, setCategories] = useState<Category[]>([]);
 
   const loadCats = useCallback(async () => {
-    const list = await categoryRepo.list(type === "credit" ? "income" : "expense");
-    setCategories(list);
-    if (!categoryId && list.length > 0) setCategoryId(list[0].id);
-  }, [type, categoryId]);
+    await loadCategories(type === "credit" ? "income" : "expense");
+  }, [type, loadCategories]);
 
   useEffect(() => { loadCats(); }, [loadCats]);
 
   useEffect(() => {
+    if (!categoryId && categories.length > 0) {
+      setCategoryId(categories[0].id);
+    }
+  }, [categoryId, categories]);
+
+  useEffect(() => {
     (async () => {
       if (!isEdit || !id) return;
-      const t = await transactionRepo.get(id);
+      const t = await getTransactionById(id);
       if (!t) return;
       setType(t.type);
       setAmount(String(t.amount));
@@ -55,7 +60,7 @@ export default function AddEditTransaction() {
       setPaymentMode((t.payment_mode as PaymentMode) ?? "upi");
       setDate(new Date(t.date));
     })();
-  }, [id, isEdit]);
+  }, [id, isEdit, getTransactionById]);
 
   const save = async () => {
     const val = parseFloat(amount);
@@ -72,8 +77,7 @@ export default function AddEditTransaction() {
       date: date.toISOString(),
       payment_mode: paymentMode,
     };
-    if (isEdit && id) await transactionRepo.update(id, input);
-    else await transactionRepo.create(input);
+    await saveTransaction(input, isEdit && id ? id : undefined);
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     router.back();
   };
@@ -84,7 +88,7 @@ export default function AddEditTransaction() {
       { text: "Cancel", style: "cancel" },
       {
         text: "Delete", style: "destructive", onPress: async () => {
-          await transactionRepo.remove(id);
+          await deleteTransaction(id);
           Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
           router.back();
         }

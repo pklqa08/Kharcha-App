@@ -5,10 +5,10 @@ import { useRouter } from "expo-router";
 import * as LocalAuthentication from "expo-local-authentication";
 import * as Haptics from "expo-haptics";
 
-import { useTheme, spacing, mono } from "@/src/core/theme";
-import { PinPad } from "@/src/widgets/PinPad";
-import { verifyPin } from "@/src/core/pin";
-import { useSettings } from "@/src/providers/AppProviders";
+import { useTheme, spacing, mono } from "@/src/shared/theme/theme";
+import { PinPad } from "@/src/presentation/widgets/PinPad";
+import { verifyPin } from "@/src/domain/services/pin";
+import { useSettings } from "@/src/application/providers/AppProviders";
 
 export default function LockScreen() {
   const { palette } = useTheme();

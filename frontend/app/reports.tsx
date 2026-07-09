@@ -4,12 +4,12 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import dayjs from "dayjs";
 
-import { useTheme, spacing, radius, mono } from "@/src/core/theme";
-import { useSettings } from "@/src/providers/AppProviders";
-import { transactionRepo } from "@/src/data/repos";
-import { getCurrency, formatAmount } from "@/src/core/currencies";
-import { startOfDay, endOfDay, startOfMonth, endOfMonth, startOfYear, endOfYear } from "@/src/core/format";
-import { ScreenHeader, Card, Chip, SectionHeader, EmptyState } from "@/src/widgets/ui";
+import { useTheme, spacing, radius, mono } from "@/src/shared/theme/theme";
+import { useTransactionProvider } from "@/src/application/providers";
+import { useSettings } from "@/src/application/providers/AppProviders";
+import { getCurrency, formatAmount } from "@/src/domain/services/currencies";
+import { startOfDay, endOfDay, startOfMonth, endOfMonth, startOfYear, endOfYear } from "@/src/domain/services/format";
+import { ScreenHeader, Card, Chip, SectionHeader, EmptyState } from "@/src/presentation/widgets/ui";
 
 type Period = "day" | "month" | "year";
 
@@ -21,6 +21,7 @@ interface ReportData {
 
 export default function Reports() {
   const { palette } = useTheme();
+  const { totalsBetween, categoryBreakdown, topMerchants } = useTransactionProvider();
   const { currency } = useSettings();
   const cur = getCurrency(currency);
   const router = useRouter();
@@ -31,12 +32,12 @@ export default function Reports() {
     const from = period === "day" ? startOfDay() : period === "month" ? startOfMonth() : startOfYear();
     const to = period === "day" ? endOfDay() : period === "month" ? endOfMonth() : endOfYear();
     const [totals, cats, merchants] = await Promise.all([
-      transactionRepo.totalsBetween(from, to),
-      transactionRepo.categoryBreakdown(from, to, "debit"),
-      transactionRepo.topMerchants(from, to, 10),
+      totalsBetween(from, to),
+      categoryBreakdown(from, to, "debit"),
+      topMerchants(from, to, 10),
     ]);
     setData({ totals, categories: cats.map((c) => ({ name: c.name, color: c.color, total: c.total })), merchants });
-  }, [period]);
+  }, [period, totalsBetween, categoryBreakdown, topMerchants]);
 
   useEffect(() => { load(); }, [load]);
 
