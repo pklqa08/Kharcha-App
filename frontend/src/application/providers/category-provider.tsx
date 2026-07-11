@@ -33,9 +33,6 @@ export const CategoryProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     try {
       const list = await categoryRepo.list(type);
       setCategories(list);
-    } catch (error) {
-      console.warn("[category-provider] Failed to load categories", error);
-      setCategories([]);
     } finally {
       setLoading(false);
     }
