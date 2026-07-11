@@ -6,16 +6,24 @@ import {
 
 export const categoryRepo = {
   list: async (type?: "expense" | "income"): Promise<Category[]> => {
-    const db = await getRequiredDb();
-    if (type) {
+    try {
+      const db = await getRequiredDb();
+      if (type) {
+        return db.getAllAsync<Category>(
+          "SELECT * FROM categories WHERE type = ? ORDER BY sort_order ASC, name ASC",
+          [type]
+        );
+      }
       return db.getAllAsync<Category>(
-        "SELECT * FROM categories WHERE type = ? ORDER BY sort_order ASC, name ASC",
-        [type]
+        "SELECT * FROM categories ORDER BY type, sort_order, name"
       );
+    } catch (error) {
+      console.warn("[category-repo] SQLite unavailable while listing categories", error);
+      if (error instanceof Error) {
+        throw error;
+      }
+      throw new Error("Failed to load categories from SQLite");
     }
-    return db.getAllAsync<Category>(
-      "SELECT * FROM categories ORDER BY type, sort_order, name"
-    );
   },
 
   get: async (id: string): Promise<Category | null> => {
