@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useMemo, useState } from "react";
+import React, { createContext, useCallback, useContext, useMemo, useState } from "react";
 
 import { Transaction, TransactionInput, TxnType } from "@/src/domain/entities/models";
 import { transactionRepo } from "@/src/infrastructure/repositories/repos";
@@ -46,7 +46,7 @@ export const TransactionProvider: React.FC<{ children: React.ReactNode }> = ({ c
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const loadTransactions = async (opts?: {
+  const loadTransactions = useCallback(async (opts?: {
     search?: string;
     type?: TxnType;
     categoryId?: string;
@@ -64,77 +64,78 @@ export const TransactionProvider: React.FC<{ children: React.ReactNode }> = ({ c
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const getTransactionById = async (id: string): Promise<Transaction | null> => {
+  const getTransactionById = useCallback(async (id: string): Promise<Transaction | null> => {
     try {
       return await transactionRepo.get(id);
     } catch (error) {
       console.warn("[transaction-provider] Failed to get transaction by id", error);
       return null;
     }
-  };
+  }, []);
 
-  const saveTransaction = async (input: TransactionInput, existingId?: string) => {
+  const saveTransaction = useCallback(async (input: TransactionInput, existingId?: string) => {
     try {
       await transactionService.save(input, existingId);
     } catch (error) {
       console.warn("[transaction-provider] Failed to save transaction", error);
     }
-  };
+  }, []);
 
-  const deleteTransaction = async (id: string) => {
+  const deleteTransaction = useCallback(async (id: string) => {
     try {
       await transactionService.deleteById(id);
     } catch (error) {
       console.warn("[transaction-provider] Failed to delete transaction", error);
+      throw error;
     }
-  };
+  }, []);
 
-  const clearTransactions = async () => {
+  const clearTransactions = useCallback(async () => {
     try {
       await transactionService.clearAll();
       setTransactions([]);
     } catch (error) {
       console.warn("[transaction-provider] Failed to clear transactions", error);
     }
-  };
+  }, []);
 
-  const totalsBetween = async (from: string, to: string) => {
+  const totalsBetween = useCallback(async (from: string, to: string) => {
     try {
       return await transactionRepo.totalsBetween(from, to);
     } catch (error) {
       console.warn("[transaction-provider] Failed to load totals", error);
       return { income: 0, expense: 0 };
     }
-  };
+  }, []);
 
-  const categoryBreakdown = async (from: string, to: string, type: TxnType) => {
+  const categoryBreakdown = useCallback(async (from: string, to: string, type: TxnType) => {
     try {
       return await transactionRepo.categoryBreakdown(from, to, type);
     } catch (error) {
       console.warn("[transaction-provider] Failed to load category breakdown", error);
       return [];
     }
-  };
+  }, []);
 
-  const topMerchants = async (from: string, to: string, limit?: number) => {
+  const topMerchants = useCallback(async (from: string, to: string, limit?: number) => {
     try {
       return await transactionRepo.topMerchants(from, to, limit);
     } catch (error) {
       console.warn("[transaction-provider] Failed to load top merchants", error);
       return [];
     }
-  };
+  }, []);
 
-  const dailySeries = async (from: string, to: string) => {
+  const dailySeries = useCallback(async (from: string, to: string) => {
     try {
       return await transactionRepo.dailySeries(from, to);
     } catch (error) {
       console.warn("[transaction-provider] Failed to load daily series", error);
       return [];
     }
-  };
+  }, []);
 
   const value = useMemo(
     () => ({
@@ -150,7 +151,19 @@ export const TransactionProvider: React.FC<{ children: React.ReactNode }> = ({ c
       topMerchants,
       dailySeries,
     }),
-    [transactions, loading]
+    [
+      transactions,
+      loading,
+      loadTransactions,
+      getTransactionById,
+      saveTransaction,
+      deleteTransaction,
+      clearTransactions,
+      totalsBetween,
+      categoryBreakdown,
+      topMerchants,
+      dailySeries,
+    ]
   );
 
   return <TransactionContext.Provider value={value}>{children}</TransactionContext.Provider>;

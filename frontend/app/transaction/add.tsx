@@ -34,6 +34,7 @@ export default function AddEditTransaction() {
   const [paymentMode, setPaymentMode] = useState<PaymentMode>("upi");
   const [date, setDate] = useState<Date>(new Date());
   const [showDatePicker, setShowDatePicker] = useState<null | "date" | "time">(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const loadCats = useCallback(async () => {
     await loadCategories(type === "credit" ? "income" : "expense");
@@ -82,19 +83,58 @@ export default function AddEditTransaction() {
     router.back();
   };
 
-  const del = async () => {
-    if (!id) return;
+  const handleDelete = useCallback(async () => {
+    if (!id || isDeleting) return;
+    setIsDeleting(true);
+    try {
+      await deleteTransaction(id);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+      router.back();
+    } finally {
+      setIsDeleting(false);
+    }
+  }, [id, isDeleting, deleteTransaction, router]);
+
+  const del = useCallback(async () => {
+    if (!id || isDeleting) return;
+
+    if (Platform.OS === "web") {
+      const confirmFn = (globalThis as { confirm?: (message?: string) => boolean }).confirm;
+      const confirmed = typeof confirmFn === "function"
+        ? confirmFn("Delete transaction?\n\nThis cannot be undone.")
+        : false;
+
+      if (!confirmed) {
+        return;
+      }
+
+      try {
+        await handleDelete();
+      } catch (error) {
+        console.warn("[txn-form] Failed to delete transaction", error);
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+        Alert.alert("Unable to delete transaction", "Please try again.");
+      }
+      return;
+    }
+
     Alert.alert("Delete transaction?", "This cannot be undone.", [
       { text: "Cancel", style: "cancel" },
       {
-        text: "Delete", style: "destructive", onPress: async () => {
-          await deleteTransaction(id);
-          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-          router.back();
+        text: "Delete",
+        style: "destructive",
+        onPress: async () => {
+          try {
+            await handleDelete();
+          } catch (error) {
+            console.warn("[txn-form] Failed to delete transaction", error);
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+            Alert.alert("Unable to delete transaction", "Please try again.");
+          }
         }
       }
     ]);
-  };
+  }, [id, isDeleting, handleDelete]);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: palette.surface }} edges={["top"]} testID="txn-form-screen">
@@ -102,7 +142,7 @@ export default function AddEditTransaction() {
         title={isEdit ? "Edit Transaction" : "Add Transaction"}
         onBack={() => router.back()}
         right={isEdit ? (
-          <Pressable testID="txn-delete-btn" onPress={del} hitSlop={12}>
+          <Pressable testID="txn-delete-btn" onPress={del} hitSlop={12} disabled={isDeleting}>
             <Feather name="trash-2" size={20} color={palette.error} />
           </Pressable>
         ) : undefined}

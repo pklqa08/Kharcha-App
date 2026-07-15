@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useMemo, useState } from "react";
+import React, { createContext, useCallback, useContext, useMemo, useState } from "react";
 
 import { Category, Transaction } from "@/src/domain/entities/models";
 import { categoryRepo, transactionRepo } from "@/src/infrastructure/repositories/repos";
@@ -34,7 +34,7 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const [categoriesMap, setCategoriesMap] = useState<Record<string, Category>>({});
   const [loading, setLoading] = useState(false);
 
-  const loadDashboard = async () => {
+  const loadDashboard = useCallback(async () => {
     setLoading(true);
     try {
       const [todayTotals, monthTotals, cats, latest] = await Promise.all([
@@ -62,11 +62,11 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     } finally {
       setLoading(false);
     }
-  };
+  }, [totalsBetween]);
 
   const value = useMemo(
     () => ({ today, month, recent, categoriesMap, loading, loadDashboard }),
-    [today, month, recent, categoriesMap, loading]
+    [today, month, recent, categoriesMap, loading, loadDashboard]
   );
 
   return <DashboardContext.Provider value={value}>{children}</DashboardContext.Provider>;
