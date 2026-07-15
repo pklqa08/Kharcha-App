@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useMemo, useState } from "react";
+import React, { createContext, useCallback, useContext, useMemo, useState } from "react";
 
 import { Category } from "@/src/domain/entities/models";
 import { categoryRepo } from "@/src/infrastructure/repositories/repos";
@@ -28,7 +28,7 @@ export const CategoryProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const loadCategories = async (type?: "expense" | "income") => {
+  const loadCategories = useCallback(async (type?: "expense" | "income") => {
     setLoading(true);
     try {
       const list = await categoryRepo.list(type);
@@ -36,7 +36,7 @@ export const CategoryProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   const createCategory = async (name: string, type: "expense" | "income", icon: string, color: string) => {
     await categoryRepo.create(name, type, icon, color);
@@ -58,7 +58,7 @@ export const CategoryProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   const value = useMemo(
     () => ({ categories, loading, loadCategories, createCategory, removeCategory, getCategoryMap }),
-    [categories, loading]
+    [categories, loading, loadCategories]
   );
 
   return <CategoryContext.Provider value={value}>{children}</CategoryContext.Provider>;
