@@ -1,6 +1,7 @@
 import { TransactionInput } from "@/src/domain/entities/models";
 import { ITransactionRepository } from "@/src/domain/interfaces/repositories";
 import { MerchantResolutionService } from "@/src/application/services/merchant-resolution.service";
+import { CategoryResolutionService } from "@/src/application/services/category-resolution.service";
 
 export interface TransactionService {
   save(input: TransactionInput, existingId?: string): Promise<void>;
@@ -10,7 +11,8 @@ export interface TransactionService {
 
 export const createTransactionService = (
   transactionRepository: ITransactionRepository,
-  merchantResolutionService?: MerchantResolutionService
+  merchantResolutionService?: MerchantResolutionService,
+  categoryResolutionService?: CategoryResolutionService
 ): TransactionService => {
   const save = async (input: TransactionInput, existingId?: string): Promise<void> => {
     const merchantInput = input.merchant ?? input.merchantName ?? null;
@@ -18,9 +20,16 @@ export const createTransactionService = (
       ? await merchantResolutionService.resolve(merchantInput)
       : null;
 
+    const categoryInput = input.categoryName ?? null;
+    const hasCategoryText = typeof categoryInput === "string" && categoryInput.trim().length > 0;
+    const category = categoryResolutionService && hasCategoryText
+      ? await categoryResolutionService.resolve(categoryInput)
+      : null;
+
     const transactionDraft = {
       ...input,
       merchantId: merchant ? merchant.id : (input.merchantId ?? null),
+      categoryId: category ? category.id : (input.categoryId ?? null),
     };
 
     if (existingId) {

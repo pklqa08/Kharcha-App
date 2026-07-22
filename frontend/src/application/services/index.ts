@@ -3,7 +3,8 @@ import { createAnalyticsEngine } from "@/src/application/services/analytics-engi
 import { createPinService } from "@/src/application/services/pin.service";
 import { createTransactionService } from "@/src/application/services/transaction.service";
 import { createMerchantResolutionService } from "@/src/application/services/merchant-resolution.service";
-import { budgetRepo, settingsRepo, transactionRepo } from "@/src/infrastructure/repositories/repos";
+import { createCategoryResolutionService } from "@/src/application/services/category-resolution.service";
+import { budgetRepo, categoryRepo, settingsRepo, transactionRepo } from "@/src/infrastructure/repositories/repos";
 import { merchantRepo } from "@/src/infrastructure/repositories/repos";
 
 export { createPinService, type PinService, type PinServiceConfig } from "./pin.service";
@@ -15,8 +16,13 @@ export const pinService = createPinService(settingsRepo, {
 });
 
 const merchantResolutionService = createMerchantResolutionService(merchantRepo);
+const categoryResolutionService = createCategoryResolutionService(categoryRepo);
 
-export const transactionService = createTransactionService(transactionRepo, merchantResolutionService);
+export const transactionService = createTransactionService(
+  transactionRepo,
+  merchantResolutionService,
+  categoryResolutionService
+);
 
 export const analyticsEngine = createAnalyticsEngine({
   transactions: transactionRepo,
