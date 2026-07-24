@@ -4,9 +4,11 @@ import { MerchantResolutionService } from "@/src/application/services/merchant-r
 import { CategoryResolutionService } from "@/src/application/services/category-resolution.service";
 import { BankResolutionService } from "@/src/application/services/bank-resolution.service";
 import { AccountResolutionService } from "@/src/application/services/account-resolution.service";
+import { TransactionValidationService } from "@/src/application/services/transaction-validation.service";
+import { ValidationResult } from "@/src/application/models/validation-result";
 
 export interface TransactionService {
-  save(input: TransactionInput, existingId?: string): Promise<void>;
+  save(input: TransactionInput, existingId?: string): Promise<ValidationResult>;
   deleteById(id: string): Promise<void>;
   clearAll(): Promise<void>;
 }
@@ -16,9 +18,10 @@ export const createTransactionService = (
   merchantResolutionService?: MerchantResolutionService,
   categoryResolutionService?: CategoryResolutionService,
   bankResolutionService?: BankResolutionService,
-  accountResolutionService?: AccountResolutionService
+  accountResolutionService?: AccountResolutionService,
+  transactionValidationService?: TransactionValidationService
 ): TransactionService => {
-  const save = async (input: TransactionInput, existingId?: string): Promise<void> => {
+  const save = async (input: TransactionInput, existingId?: string): Promise<ValidationResult> => {
     const merchantInput = input.merchant ?? input.merchantName ?? null;
     const merchant = merchantResolutionService && merchantInput
       ? await merchantResolutionService.resolve(merchantInput)
@@ -62,11 +65,20 @@ export const createTransactionService = (
       ...(!account && preservedAccountId ? { accountId: preservedAccountId } : {}),
     };
 
+    const validationResult = transactionValidationService
+      ? transactionValidationService.validate(transactionDraft)
+      : { valid: true, errors: [] };
+
+    if (!validationResult.valid) {
+      return validationResult;
+    }
+
     if (existingId) {
       await transactionRepository.update(existingId, transactionDraft);
-      return;
+      return validationResult;
     }
     await transactionRepository.create(transactionDraft);
+    return validationResult;
   };
 
   const deleteById = async (id: string): Promise<void> => {
