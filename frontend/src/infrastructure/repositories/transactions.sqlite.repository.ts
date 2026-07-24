@@ -22,6 +22,21 @@ type TransactionListOptions = {
   offset?: number;
 };
 
+type TransactionSearchCriteria = {
+  keyword?: string;
+  merchantId?: string;
+  categoryId?: string;
+  bankId?: string;
+  accountId?: string;
+  transactionType?: TxnType;
+  startDate?: string;
+  endDate?: string;
+  minAmount?: number;
+  maxAmount?: number;
+  limit?: number;
+  offset?: number;
+};
+
 type DuplicateLookup = {
   amount: number;
   type: TxnType;
@@ -165,6 +180,73 @@ const buildFindAllQuery = (opts?: TransactionListOptions): {
   const where = clauses.length ? `WHERE ${clauses.join(" AND ")}` : "";
   const limitValue = typeof opts?.limit === "number" ? Math.max(0, Math.floor(opts.limit)) : null;
   const offsetValue = typeof opts?.offset === "number" ? Math.max(0, Math.floor(opts.offset)) : null;
+  const limit =
+    limitValue !== null
+      ? `LIMIT ${limitValue}${offsetValue !== null ? ` OFFSET ${offsetValue}` : ""}`
+      : "";
+
+  return {
+    sql: `SELECT * FROM transactions ${where} ORDER BY date DESC, created_at DESC ${limit}`,
+    params,
+  };
+};
+
+const buildSearchQuery = (criteria: TransactionSearchCriteria): {
+  sql: string;
+  params: Array<string | number>;
+} => {
+  const clauses: string[] = [];
+  const params: Array<string | number> = [];
+
+  if (criteria.transactionType) {
+    clauses.push("type = ?");
+    params.push(criteria.transactionType);
+  }
+  if (criteria.categoryId) {
+    clauses.push("category_id = ?");
+    params.push(criteria.categoryId);
+  }
+  if (criteria.merchantId) {
+    clauses.push("merchant_id = ?");
+    params.push(criteria.merchantId);
+  }
+  if (criteria.bankId) {
+    clauses.push("bank_id = ?");
+    params.push(criteria.bankId);
+  }
+  if (criteria.accountId) {
+    clauses.push("account_id = ?");
+    params.push(criteria.accountId);
+  }
+  if (criteria.startDate) {
+    clauses.push("date >= ?");
+    params.push(criteria.startDate);
+  }
+  if (criteria.endDate) {
+    clauses.push("date <= ?");
+    params.push(criteria.endDate);
+  }
+  if (typeof criteria.minAmount === "number") {
+    clauses.push("amount >= ?");
+    params.push(criteria.minAmount);
+  }
+  if (typeof criteria.maxAmount === "number") {
+    clauses.push("amount <= ?");
+    params.push(criteria.maxAmount);
+  }
+  if (criteria.keyword) {
+    clauses.push(
+      "(merchant LIKE ? OR description LIKE ? OR notes LIKE ? OR reference_number LIKE ? OR bank_name LIKE ? OR account_number LIKE ?)"
+    );
+    const q = `%${criteria.keyword}%`;
+    params.push(q, q, q, q, q, q);
+  }
+
+  const where = clauses.length ? `WHERE ${clauses.join(" AND ")}` : "";
+  const limitValue =
+    typeof criteria.limit === "number" ? Math.max(0, Math.floor(criteria.limit)) : null;
+  const offsetValue =
+    typeof criteria.offset === "number" ? Math.max(0, Math.floor(criteria.offset)) : null;
   const limit =
     limitValue !== null
       ? `LIMIT ${limitValue}${offsetValue !== null ? ` OFFSET ${offsetValue}` : ""}`
@@ -399,8 +481,12 @@ export const transactionRepo = {
   findByAccount: async (accountId: string): Promise<Transaction[]> =>
     transactionRepo.findAll({ accountId }),
 
-  search: async (query: string, limit = 100): Promise<Transaction[]> =>
-    transactionRepo.findAll({ search: query, limit }),
+  search: async (criteria: TransactionSearchCriteria): Promise<Transaction[]> => {
+    const db = await getRequiredDb();
+    const query = buildSearchQuery(criteria);
+    const rows = await db.getAllAsync<TransactionPersistenceRow>(query.sql, query.params);
+    return mapRowsToTransactions(rows);
+  },
 
   exists: async (idOrUuid: string): Promise<boolean> => {
     const db = await getRequiredDb();

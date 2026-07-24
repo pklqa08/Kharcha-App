@@ -7,6 +7,7 @@ import { createCategoryResolutionService } from "@/src/application/services/cate
 import { createBankResolutionService } from "@/src/application/services/bank-resolution.service";
 import { createAccountResolutionService } from "@/src/application/services/account-resolution.service";
 import { createTransactionValidationService } from "@/src/application/services/transaction-validation.service";
+import { createTransactionSearchService } from "@/src/application/services/transaction-search.service";
 import { accountRepo, bankRepo, budgetRepo, categoryRepo, settingsRepo, transactionRepo } from "@/src/infrastructure/repositories/repos";
 import { merchantRepo } from "@/src/infrastructure/repositories/repos";
 
@@ -23,6 +24,7 @@ const categoryResolutionService = createCategoryResolutionService(categoryRepo);
 const bankResolutionService = createBankResolutionService(bankRepo);
 const accountResolutionService = createAccountResolutionService(accountRepo);
 const transactionValidationService = createTransactionValidationService();
+const transactionSearchService = createTransactionSearchService(transactionRepo);
 
 export const transactionService = createTransactionService(
   transactionRepo,
@@ -30,7 +32,8 @@ export const transactionService = createTransactionService(
   categoryResolutionService,
   bankResolutionService,
   accountResolutionService,
-  transactionValidationService
+  transactionValidationService,
+  transactionSearchService
 );
 
 export const analyticsEngine = createAnalyticsEngine({
