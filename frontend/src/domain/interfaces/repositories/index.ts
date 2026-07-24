@@ -3,3 +3,4 @@ export * from "./transaction.repository.interface";
 export * from "./merchant.repository.interface";
 export * from "./category.repository.interface";
 export * from "./bank.repository.interface";
+export * from "./account.repository.interface";
