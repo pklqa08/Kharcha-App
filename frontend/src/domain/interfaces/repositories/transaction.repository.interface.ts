@@ -13,6 +13,21 @@ export interface TransactionFindOptions {
   offset?: number;
 }
 
+export interface TransactionSearchCriteria {
+  keyword?: string;
+  merchantId?: string;
+  categoryId?: string;
+  bankId?: string;
+  accountId?: string;
+  transactionType?: "debit" | "credit";
+  startDate?: string;
+  endDate?: string;
+  minAmount?: number;
+  maxAmount?: number;
+  limit?: number;
+  offset?: number;
+}
+
 export interface TransactionDuplicateLookup {
   amount: number;
   type: "debit" | "credit";
@@ -33,7 +48,7 @@ export interface ITransactionRepository {
   findByCategory(categoryId: string): Promise<Transaction[]>;
   findByBank(bankId: string): Promise<Transaction[]>;
   findByAccount(accountId: string): Promise<Transaction[]>;
-  search(query: string, limit?: number): Promise<Transaction[]>;
+  search(criteria: TransactionSearchCriteria): Promise<Transaction[]>;
   exists(idOrUuid: string): Promise<boolean>;
   count(opts?: Omit<TransactionFindOptions, "limit" | "offset">): Promise<number>;
   findPossibleDuplicate(lookup: TransactionDuplicateLookup): Promise<Transaction | null>;
