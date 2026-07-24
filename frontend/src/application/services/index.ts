@@ -6,6 +6,7 @@ import { createMerchantResolutionService } from "@/src/application/services/merc
 import { createCategoryResolutionService } from "@/src/application/services/category-resolution.service";
 import { createBankResolutionService } from "@/src/application/services/bank-resolution.service";
 import { createAccountResolutionService } from "@/src/application/services/account-resolution.service";
+import { createTransactionValidationService } from "@/src/application/services/transaction-validation.service";
 import { accountRepo, bankRepo, budgetRepo, categoryRepo, settingsRepo, transactionRepo } from "@/src/infrastructure/repositories/repos";
 import { merchantRepo } from "@/src/infrastructure/repositories/repos";
 
@@ -21,13 +22,15 @@ const merchantResolutionService = createMerchantResolutionService(merchantRepo);
 const categoryResolutionService = createCategoryResolutionService(categoryRepo);
 const bankResolutionService = createBankResolutionService(bankRepo);
 const accountResolutionService = createAccountResolutionService(accountRepo);
+const transactionValidationService = createTransactionValidationService();
 
 export const transactionService = createTransactionService(
   transactionRepo,
   merchantResolutionService,
   categoryResolutionService,
   bankResolutionService,
-  accountResolutionService
+  accountResolutionService,
+  transactionValidationService
 );
 
 export const analyticsEngine = createAnalyticsEngine({
